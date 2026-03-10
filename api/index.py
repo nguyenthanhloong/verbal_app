@@ -1,9 +1,13 @@
-import sys
+
+
 import os
+import sys
 
-# 1. Lấy đường dẫn của thư mục gốc (vercel_deploy) và thêm vào sys.path
-# Điều này giúp Python nhìn thấy thư mục "app" nằm bên ngoài
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Lấy đường dẫn tuyệt đối của thư mục 'api' hiện tại
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
-# 2. Bây giờ thì import bình thường
+# Ép Python phải ưu tiên tìm kiếm code trong thư mục 'api' này trước
+sys.path.insert(0, current_dir)
+
+# Bây giờ Python đã nhìn thấy thư mục 'app' nằm ngay cạnh index.py
 from app.main import app
