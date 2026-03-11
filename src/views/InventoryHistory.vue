@@ -91,7 +91,7 @@
                 :class="{ active: actionType === 'EXPORT_OLD' }"
                 @click="actionType = 'EXPORT_OLD'"
               >
-                Xuất Trả NCC
+                Xuất Trả Cũ
               </button>
             </template>
             <template v-else>

@@ -394,7 +394,7 @@ const ALL_ACTIONS = [
     type: 'IMPORT',
     perm: 'FUNC_VIP_NHAP_MOI',
     title: 'Gửi Hàng Mới',
-    desc: 'Nhập kho thiết bị mới tinh',
+    desc: 'Nhập kho thiết bị mới',
     icon: ArrowDownToLine,
   },
   {
@@ -412,7 +412,7 @@ const ALL_ACTIONS = [
     type: 'IMPORT',
     perm: 'FUNC_VIP_NHAP_CU',
     title: 'Khách Trả Lại',
-    desc: 'Nhập lại hàng cũ bị lỗi/trả',
+    desc: 'Nhập lại hàng cũ',
     icon: RefreshCcw,
   },
   {
@@ -421,7 +421,7 @@ const ALL_ACTIONS = [
     type: 'EXPORT',
     perm: 'FUNC_VIP_XUAT_CU',
     title: 'Trả Nhà Cung Cấp',
-    desc: 'Xuất hàng cũ trả về xưởng',
+    desc: 'Xuất hàng cũ',
     icon: SendToBack,
   },
   // Nhóm THƯỜNG
@@ -439,8 +439,8 @@ const ALL_ACTIONS = [
     mode: 'THUONG',
     type: 'EXPORT',
     perm: 'FUNC_THUONG_XUAT',
-    title: 'Xuất Kho (FIFO)',
-    desc: 'Yêu cầu xuất tự động',
+    title: 'Xuất Kho',
+    desc: 'Xuất hàng trong kho',
     icon: ArrowUpFromLine,
   },
   // Nhóm LẺ
@@ -450,7 +450,7 @@ const ALL_ACTIONS = [
     type: 'IMPORT',
     perm: 'FUNC_LE_NHAP',
     title: 'Nhập Hàng Lẻ',
-    desc: 'Gửi hàng vào kho không cần mã',
+    desc: 'Nhập hàng vào kho',
     icon: ArrowDownToLine,
   },
   {
@@ -459,7 +459,7 @@ const ALL_ACTIONS = [
     type: 'EXPORT',
     perm: 'FUNC_LE_XUAT',
     title: 'Xuất Hàng Lẻ',
-    desc: 'Lấy hàng ra khỏi kho',
+    desc: 'Xuất hàng trong kho',
     icon: ArrowUpFromLine,
   },
 ];

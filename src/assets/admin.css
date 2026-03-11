@@ -57,6 +57,7 @@ h3 {
 .data-table td {
   padding: 0.85rem;
   border-bottom: 1px solid #e0e0e0;
+  text-align: center;
 }
 .data-table th {
   background: #0f3d26; /* primary */
