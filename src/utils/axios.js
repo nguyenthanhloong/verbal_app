@@ -5,7 +5,7 @@ import { useToast } from '../composables/useToast';
 import router from '../router';
 
 const apiClient = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: import.meta.env.MODE === 'development' ? 'http://localhost:8000' : '',
     timeout: 10000,
 });
 

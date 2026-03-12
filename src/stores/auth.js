@@ -64,8 +64,6 @@ export const useAuthStore = defineStore('auth', {
                 // Đã hết hạn -> Đá ra ngay
                 this.logout(true);
             } else {
-                // Đặt đồng hồ báo thức
-                console.log(`⏰ Đã cài đặt tự động đăng xuất sau ${Math.round(timeUntilExpiry / 1000 / 60)} phút nữa.`);
 
                 logoutTimer = setTimeout(() => {
                     const toast = useToast();
