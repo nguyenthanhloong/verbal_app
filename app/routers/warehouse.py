@@ -248,13 +248,14 @@ def xuat_kho_le_fifo(payload: ExportLeCreate, db: Session = Depends(get_db), cur
     real_id = existing_product.id
     remaining_qty = payload.so_luong
     
-    import_batches = db.query(ImportLe).filter(ImportLe.id == real_id)\
+    import_batches = db.query(ImportLe)\
+        .filter(ImportLe.id == real_id, ImportLe.ma_kho_spl == payload.ma_kho_spl)\
         .with_for_update().order_by(ImportLe.ngay.asc()).all()
 
-    if not import_batches: raise HTTPException(status_code=400, detail="Sản phẩm này chưa từng được nhập kho!")
+    if not import_batches: raise HTTPException(status_code=400, detail=f"Sản phẩm '{payload.ten_san_pham}' không có sẵn tại kho {payload.ma_kho_spl}!")
 
     total_already_exported = db.query(func.coalesce(func.sum(ExportLe.so_luong), 0))\
-        .filter(ExportLe.id == real_id).scalar()
+        .filter(ExportLe.id == real_id, ExportLe.ma_kho_spl == payload.ma_kho_spl).scalar()
 
     export_records_to_add = []
     cumulative_import = 0
@@ -262,6 +263,7 @@ def xuat_kho_le_fifo(payload: ExportLeCreate, db: Session = Depends(get_db), cur
     for batch in import_batches:
         if remaining_qty <= 0: break
         cumulative_import += batch.so_luong
+        
         if total_already_exported >= cumulative_import: continue
             
         stock_available = batch.so_luong
@@ -271,21 +273,36 @@ def xuat_kho_le_fifo(payload: ExportLeCreate, db: Session = Depends(get_db), cur
         qty_to_deduct = min(remaining_qty, stock_available)
 
         new_export = ExportLe(
-            id=real_id,customer_id=payload.customer_id, ma_kho_spl=batch.ma_kho_spl, ten_san_pham=batch.ten_san_pham,
-            so_luong=qty_to_deduct, nv_giao_hang=payload.nv_giao_hang,
-            bien_so_xe=payload.bien_so_xe, ma_bill=payload.ma_bill,
-            nv_nhap_lieu=current_user.username, ghi_chu=payload.ghi_chu, ngay_nhap_kho=batch.ngay 
+            id=real_id,
+            customer_id=payload.customer_id, 
+            ma_kho_spl=batch.ma_kho_spl, 
+            ten_san_pham=batch.ten_san_pham,
+            so_luong=qty_to_deduct, 
+            nv_giao_hang=payload.nv_giao_hang,
+            bien_so_xe=payload.bien_so_xe, 
+            ma_bill=payload.ma_bill,
+            nv_nhap_lieu=current_user.username, 
+            ghi_chu=payload.ghi_chu, 
+            ngay_nhap_kho=batch.ngay 
         )
         export_records_to_add.append(new_export)
         remaining_qty -= qty_to_deduct
         total_already_exported += qty_to_deduct
 
     if remaining_qty > 0:
-        raise HTTPException(status_code=400, detail=f"Không đủ hàng trong kho lẻ! Cần {payload.so_luong} nhưng kho chỉ còn {payload.so_luong - remaining_qty}.")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Không đủ hàng tại kho {payload.ma_kho_spl}! Bạn yêu cầu xuất {payload.so_luong} nhưng kho này chỉ còn {payload.so_luong - remaining_qty}."
+        )
 
     db.add_all(export_records_to_add)
     db.commit()
-    return {"message": "Xuất kho FIFO cho khách lẻ thành công!", "so_luong_yeu_cau": payload.so_luong, "so_lo_da_lay": len(export_records_to_add)}
+    
+    return {
+        "message": "Xuất kho FIFO cho khách lẻ thành công!", 
+        "so_luong_yeu_cau": payload.so_luong, 
+        "so_lo_da_lay": len(export_records_to_add)
+    }
 
 # ==============================================================================
 # PHẦN 4: API LẤY LỊCH SỬ GIAO DỊCH

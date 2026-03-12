@@ -923,7 +923,7 @@ const handleSubmit = async () => {
       payload = {
         id: 0,
         customer_id: form.value.customer_id,
-        ma_kho_sql: form.value.ma_kho_spl,
+        ma_kho_spl: form.value.ma_kho_spl,
         ten_san_pham: form.value.ten_san_pham,
         so_luong: form.value.so_luong,
         nv_giao_hang: form.value.nv_giao_hang,

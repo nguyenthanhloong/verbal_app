@@ -30,9 +30,9 @@
           <strong>Quản trị viên (Admin)</strong> hoặc
           <strong>Quản lý kho</strong> để được hỗ trợ cấp quyền.
         </p>
-        <!-- <button class="btn-contact" @click="contactAdmin">
+        <button class="btn-contact" @click="contactAdmin">
           <Mail class="btn-icon" /> Gửi yêu cầu cấp quyền
-        </button> -->
+        </button>
       </div>
 
       <div v-else class="main-content-area">

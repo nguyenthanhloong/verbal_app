@@ -97,6 +97,7 @@ class ExportNewCreate(BaseModel):
     bien_so_xe: Optional[str] = None
     ma_bill: str
     ghi_chu: Optional[str] = None
+   
 
 # 3. Schema Nhập Kho Cũ (Khách trả)
 class ImportOldCreate(BaseModel):
@@ -146,7 +147,7 @@ class ImportLeCreate(BaseModel):
 
 class ExportLeCreate(BaseModel):
     id: int
-    ma_kho_sql: str
+    ma_kho_spl: str
     customer_id: int # BẮT BUỘC CÓ
     ten_san_pham: str
     so_luong: int
