@@ -14,28 +14,6 @@
         </p>
       </div>
 
-      <!-- <div v-if="isAdmin" class="admin-view-selector mb-4">
-        <span class="label">Góc nhìn:</span>
-        <button
-          :class="['btn-tab', { active: currentMode === 'VIP' }]"
-          @click="currentMode = 'VIP'"
-        >
-          Khách VIP
-        </button>
-        <button
-          :class="['btn-tab', { active: currentMode === 'THUONG' }]"
-          @click="currentMode = 'THUONG'"
-        >
-          Khách Thường
-        </button>
-        <button
-          :class="['btn-tab', { active: currentMode === 'LE' }]"
-          @click="currentMode = 'LE'"
-        >
-          Khách Lẻ
-        </button>
-      </div> -->
-
       <div v-if="showTabSelector" class="admin-view-selector mb-4">
         <span class="label">Góc nhìn:</span>
         <button
@@ -125,7 +103,7 @@
                 <th v-if="actionType !== 'IMPORT'">Mã Vận Đơn</th>
                 <th>Mã Kho (SPL)</th>
 
-                <th v-if="currentMode !== 'VIP'">ID</th>
+                <th v-if="currentMode !== 'VIP'">Tên Khách</th>
                 <th v-if="currentMode === 'VIP'">Số Serial</th>
                 <th
                   v-if="
@@ -168,7 +146,7 @@
                 </td>
 
                 <td v-if="currentMode !== 'VIP'">
-                  {{ item.id }}
+                  {{ item.ten_khach_hang }}
                 </td>
 
                 <td
@@ -224,7 +202,7 @@
 
                 <td v-if="isExportAction" class="text-center">
                   <button
-                    @click="downloadExcel(item.ma_bill)"
+                    @click="downloadExcel(item.ma_bill, item.ma_kho_spl)"
                     class="btn btn-sm btn-outline-success action-btn"
                     title="Tải Excel"
                   >
@@ -333,16 +311,6 @@ const totalPages = computed(() => Math.ceil(totalItems.value / limit.value));
 const isExportAction = computed(() => actionType.value.includes('EXPORT'));
 
 let currentRequestId = 0; // Biến đếm ID của mỗi lần gọi API
-
-// onMounted(() => {
-//   if (!isAdmin.value) {
-//     if (authStore.hasPermission('FUNC_VIP_NHAP_MOI')) currentMode.value = 'VIP';
-//     else if (authStore.hasPermission('FUNC_THUONG_NHAP'))
-//       currentMode.value = 'THUONG';
-//     else if (authStore.hasPermission('FUNC_LE_NHAP')) currentMode.value = 'LE';
-//   }
-//   fetchData();
-// });
 
 onMounted(() => {
   if (canViewVip.value) currentMode.value = 'VIP';
@@ -464,10 +432,12 @@ const formatDate = (dateString) => {
   }).format(date);
 };
 
-const downloadExcel = async (maBill) => {
+const downloadExcel = async (maBill, maKho) => {
   try {
     let response;
     let fileName = '';
+
+    console.log(maBill, maKho);
 
     if (currentMode.value === 'VIP') {
       if (actionType.value === 'EXPORT_OLD') {
@@ -478,11 +448,12 @@ const downloadExcel = async (maBill) => {
         fileName = `Phieu_Xuat_Giao_Hang_${maBill}.xlsx`;
       }
     } else if (currentMode.value === 'THUONG') {
-      response = await inventoryService.exportExcelRegular(maBill);
-      fileName = `Phieu_Xuat_Kho_Thuong_${maBill}.xlsx`;
+      console.log(maBill, maKho);
+      response = await inventoryService.exportExcelRegular(maBill, maKho);
+      fileName = `Phieu_Xuat_Kho_Thuong_${maBill}_${maKho}.xlsx`;
     } else if (currentMode.value === 'LE') {
-      response = await inventoryService.exportExcelRetail(maBill);
-      fileName = `Phieu_Xuat_Kho_Le_${maBill}.xlsx`;
+      response = await inventoryService.exportExcelRetail(maBill, maKho);
+      fileName = `Phieu_Xuat_Kho_Le_${maBill}_${maKho}.xlsx`;
     }
 
     const url = window.URL.createObjectURL(new Blob([response.data]));

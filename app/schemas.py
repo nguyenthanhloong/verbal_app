@@ -97,7 +97,6 @@ class ExportNewCreate(BaseModel):
     bien_so_xe: Optional[str] = None
     ma_bill: str
     ghi_chu: Optional[str] = None
-    # Ghi chú: Không cần ma_kho_spl, ma_san_pham vì Backend sẽ tự động copy từ lúc nhập (như ta đã code)
 
 # 3. Schema Nhập Kho Cũ (Khách trả)
 class ImportOldCreate(BaseModel):
@@ -119,6 +118,7 @@ class ExportOldCreate(BaseModel):
 
 class ImportThuongCreate(BaseModel):
     id: int # Định danh thiết bị
+    customer_id: int # BẮT BUỘC CÓ
     ma_kho_spl: str
     ten_san_pham: str
     ma_san_pham: str
@@ -127,6 +127,8 @@ class ImportThuongCreate(BaseModel):
 
 class ExportThuongCreate(BaseModel):
     id: int # Định danh thiết bị cần xuất
+    ma_kho_spl: str
+    customer_id: int # BẮT BUỘC CÓ
     so_luong: int # Số lượng khách muốn xuất (VD: 60)
     nv_giao_hang: str
     bien_so_xe: Optional[str] = None
@@ -136,6 +138,7 @@ class ExportThuongCreate(BaseModel):
 
 class ImportLeCreate(BaseModel):
     id: int
+    customer_id: int # BẮT BUỘC CÓ
     ma_kho_spl: str
     ten_san_pham: str
     so_luong: int
@@ -143,10 +146,12 @@ class ImportLeCreate(BaseModel):
 
 class ExportLeCreate(BaseModel):
     id: int
+    ma_kho_sql: str
+    customer_id: int # BẮT BUỘC CÓ
     ten_san_pham: str
     so_luong: int
     nv_giao_hang: str
-    bien_so_xe: Optional[str] = None
+    bien_so_xe: str
     ma_bill: str
     ghi_chu: Optional[str] = None
     
@@ -165,6 +170,50 @@ class TransactionDynamicCreate(BaseModel):
     
     # Chứa toàn bộ các ô Input động do VueJS đẩy lên
     details: Dict[str, Any] = {}
+
+# Schema cho ViTriKho
+class ViTriKhoBase(BaseModel):
+    ma_kho: str
+    ten_kho: str
+
+class ViTriKhoCreate(ViTriKhoBase):
+    pass
+
+# ĐÃ SỬA: Bỏ ma_kho, chỉ cho phép truyền ten_kho lên để sửa
+class ViTriKhoUpdate(BaseModel):
+    ten_kho: str 
+
+class ViTriKhoOut(ViTriKhoBase):
+    id: int
+    nguoi_tao: Optional[str] = None
+    ngay_tao: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+# app/schemas.py
+from pydantic import BaseModel
+from typing import Optional
+
+class CustomerBase(BaseModel):
+    ma_khach_hang: str
+    ten_khach_hang: str
+    sdt: Optional[str] = None
+    dia_chi: Optional[str] = None
+
+class CustomerCreate(CustomerBase):
+    pass
+
+class CustomerUpdate(BaseModel):
+    ten_khach_hang: Optional[str] = None
+    sdt: Optional[str] = None
+    dia_chi: Optional[str] = None
+
+class CustomerOut(CustomerBase):
+    id: int
+    class Config:
+        from_attributes = True
+
 
 
 

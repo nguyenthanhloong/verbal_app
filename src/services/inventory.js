@@ -80,9 +80,8 @@ export const inventoryService = {
     exportExcelVipOld: (maBill) => apiClient.get(`/api/warehouse/vip/export-old/excel/${maBill}`, { responseType: 'blob' }),
     exportExcelVipNew: (maBill) => apiClient.get(`/api/warehouse/vip/export-new/excel/${maBill}`, { responseType: 'blob' }),
 
-    // THÊM 2 DÒNG NÀY:
-    exportExcelRegular: (maBill) => apiClient.get(`/api/warehouse/thuong/export/excel/${maBill}`, { responseType: 'blob' }),
-    exportExcelRetail: (maBill) => apiClient.get(`/api/warehouse/le/export/excel/${maBill}`, { responseType: 'blob' }),
+    exportExcelRegular: (maBill, maKho) => apiClient.get(`/api/warehouse/thuong/export/excel/${maBill}?ma_kho_spl=${maKho}`, { responseType: 'blob' }),
+    exportExcelRetail: (maBill, maKho) => apiClient.get(`/api/warehouse/le/export/excel/${maBill}?ma_kho_spl=${maKho}`, { responseType: 'blob' }),
 
     // THÊM API GỌI BIỂU ĐỒ
     getChartDataRegular: (timeRange = '7_days') => apiClient.get(`/api/warehouse/thuong/chart?time_range=${timeRange}`),

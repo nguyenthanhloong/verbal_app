@@ -145,7 +145,7 @@ const executeLogout = () => {
 .main-container {
   flex: 1;
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 0 auto;
   width: 100%;
   box-sizing: border-box;

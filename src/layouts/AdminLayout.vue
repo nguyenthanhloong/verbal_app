@@ -14,7 +14,29 @@
           <LayoutDashboard class="nav-icon" /> Dashboard
         </router-link>
 
-        <div class="nav-group">QUẢN TRỊ HỆ THỐNG</div>
+        <div class="nav-group" v-permission="'FUNC_CUSTOMER_MGR'">
+          DANH MỤC CƠ SỞ
+        </div>
+
+        <router-link
+          to="/admin/customers"
+          class="nav-item"
+          v-permission="'FUNC_CUSTOMER_MGR'"
+        >
+          <Users class="nav-icon" /> Khách Hàng
+        </router-link>
+
+        <router-link
+          to="/admin/locations"
+          class="nav-item"
+          v-permission="'FUNC_CUSTOMER_MGR'"
+        >
+          <MapPin class="nav-icon" /> Vị Trí Kho
+        </router-link>
+
+        <div class="nav-group" v-permission="'FUNC_ADMIN_ALL'">
+          QUẢN TRỊ HỆ THỐNG
+        </div>
 
         <router-link
           to="/admin/users"
@@ -78,7 +100,7 @@
 import { ref } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
-import ConfirmModal from '../components/ConfirmModal.vue'; // Đảm bảo đường dẫn này đúng
+import ConfirmModal from '../components/ConfirmModal.vue';
 
 import {
   Database,
@@ -88,6 +110,7 @@ import {
   Key,
   User,
   LogOut,
+  MapPin, // ĐÃ IMPORT THÊM ICON MAPPIN
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();

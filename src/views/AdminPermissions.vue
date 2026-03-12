@@ -5,11 +5,11 @@
         <Key class="title-icon" />
         <h2>Quản lý Chức Năng & Quyền (Permissions)</h2>
       </div>
-      <!-- <div class="header-actions">
+      <div class="header-actions">
         <button @click="openModal()" class="btn btn-primary">
           <Plus class="icon-sm" /> Thêm Quyền Mới
         </button>
-      </div> -->
+      </div>
     </div>
 
     <div class="card">

@@ -211,6 +211,10 @@ const permissionGroups = computed(() => {
     VIP: { title: 'Nghiệp Vụ Khách VIP', perms: [] },
     THUONG: { title: 'Nghiệp Vụ Khách Thường', perms: [] },
     LE: { title: 'Nghiệp Vụ Khách Lẻ', perms: [] },
+    MASTER_DATA: {
+      title: 'Danh Mục Cơ Sở (Khách hàng, Vị trí kho)',
+      perms: [],
+    },
     OTHER: { title: 'Các quyền hệ thống khác', perms: [] },
   };
 
@@ -219,10 +223,11 @@ const permissionGroups = computed(() => {
     if (p.code.includes('_VIP_')) groups.VIP.perms.push(p);
     else if (p.code.includes('_THUONG_')) groups.THUONG.perms.push(p);
     else if (p.code.includes('_LE_')) groups.LE.perms.push(p);
-    else groups.OTHER.perms.push(p);
+    else if (p.code.includes('_CUSTOMER_') || p.code.includes('MGR')) {
+      groups.MASTER_DATA.perms.push(p);
+    } else groups.OTHER.perms.push(p);
   });
 
-  // Trả về mảng các nhóm (bỏ qua những nhóm không có quyền nào)
   return Object.values(groups).filter((g) => g.perms.length > 0);
 });
 

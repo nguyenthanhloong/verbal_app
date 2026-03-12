@@ -1,11 +1,9 @@
 import enum
-from sqlalchemy import  Column, BigInteger, Integer, String, ForeignKey, Table, DateTime, Text, Enum, Date, JSON
-from sqlalchemy.orm import relationship,  declarative_base
+from sqlalchemy import  Column, BigInteger, Integer, String, ForeignKey, Table, DateTime, Text, Enum, Date
+from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime, date
 from sqlalchemy.sql import func
-
-# ... (Giữ nguyên các bảng user_roles, role_permissions, User, Role, Permission của bạn ở đây) ...
 
 # Bảng trung gian
 user_roles = Table('user_roles', Base.metadata,
@@ -112,6 +110,8 @@ class ImportThuong(Base):
     so_luong = Column(Integer)
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
+    customer_id = Column(BigInteger, ForeignKey("customers.id", ondelete="SET NULL"))
+    customer = relationship("Customer") # Tự động lấy chi tiết Khách hàng
 
 class ExportThuong(Base):
     __tablename__ = 'export_thuong'
@@ -131,6 +131,8 @@ class ExportThuong(Base):
     
     ngay = Column(DateTime, default=datetime.now)
     ngay_nhap_kho = Column(Date)            # RULE 3: Lưu ngày của lô nhập (Batch Date)
+    customer_id = Column(BigInteger, ForeignKey("customers.id", ondelete="SET NULL"))
+    customer = relationship("Customer")
 
 class ImportLe(Base):
     __tablename__ = 'import_le'
@@ -147,6 +149,8 @@ class ImportLe(Base):
     so_luong = Column(Integer)
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
+    customer_id = Column(BigInteger, ForeignKey("customers.id", ondelete="SET NULL"))
+    customer = relationship("Customer")
 
 class ExportLe(Base):
     __tablename__ = 'export_le'
@@ -165,34 +169,23 @@ class ExportLe(Base):
     
     ngay = Column(DateTime, default=datetime.now)
     ngay_nhap_kho = Column(Date)
+    customer_id = Column(BigInteger, ForeignKey("customers.id", ondelete="SET NULL"))
+    customer = relationship("Customer")
 
-# 1. BẢNG CẤU HÌNH NGHIỆP VỤ & GIAO DIỆN (Làm gốc cho RBAC và VueJS)
-class TransactionTemplate(Base):
-    __tablename__ = "transaction_templates"
+class ViTriKho(Base):
+    __tablename__ = "vi_tri_kho"
     
-    id = Column(Integer, primary_key=True, index=True)
-    action_code = Column(String(50), unique=True, index=True) # VD: 'VIP_IMPORT_NEW'
-    action_name = Column(String(100))                         # VD: 'Nhập Hàng VIP'
-    transaction_type = Column(String(20))                     # 'IMPORT' hoặc 'EXPORT'
-    required_permission = Column(String(50))                  # VD: 'FUNC_VIP_NHAP'
-    logic_rule = Column(String(50), default="STANDARD")       # Quyết định thuật toán Backend (VIP_IMPORT, FIFO_EXPORT...)
-    form_config = Column(JSON)                                # Cấu hình vẽ UI cho Frontend
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    ma_kho = Column(String(50), unique=True, nullable=False)
+    ten_kho = Column(String(255), nullable=False)
+    nguoi_tao = Column(String(100))
+    ngay_tao = Column(DateTime, server_default=func.now())
 
-# 2. BẢNG GIAO DỊCH LÕI (Chứa mọi loại phiếu)
-class InventoryTransaction(Base):
-    __tablename__ = "inventory_transactions"
-    
-    record_id = Column(BigInteger, primary_key=True, autoincrement=True)
-    action_code = Column(String(50), index=True)
-    
-    reference_id = Column(BigInteger, index=True, default=0)
-    ma_kho_spl = Column(String(50))
-    ma_bill = Column(String(100), index=True)
-    search_key = Column(String(100), index=True)              # Dùng tra cứu: Serial hoặc Mã SP
-    so_luong = Column(Integer, default=1)
-    
-    nv_nhap_lieu = Column(String(100))
-    ngay = Column(DateTime, default=func.now())
-    ghi_chu = Column(Text)
-    
-    chi_tiet_phieu = Column(JSON)
+class Customer(Base):
+    __tablename__ = "customers"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    ma_khach_hang = Column(String(50), unique=True, nullable=False, index=True)
+    ten_khach_hang = Column(String(255), nullable=False)
+    sdt = Column(String(20))
+    dia_chi = Column(String(500))

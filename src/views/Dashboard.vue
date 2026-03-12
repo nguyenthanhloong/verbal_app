@@ -64,6 +64,33 @@
           </div>
         </div>
 
+        <div v-if="canAccessMasterData" class="dashboard-section mt-5">
+          <div class="section-header">
+            <h3 class="section-title">📁 Danh Mục Cơ Sở</h3>
+            <span class="section-divider"></span>
+          </div>
+
+          <div class="card-grid">
+            <div
+              v-for="card in masterDataCards"
+              :key="card.route"
+              class="action-card"
+              @click="router.push(card.route)"
+            >
+              <div :class="['icon-wrapper', card.colorClass]">
+                <component :is="card.icon" class="icon-lg" />
+              </div>
+              <div class="card-content">
+                <h4>{{ card.title }}</h4>
+                <p>{{ card.description }}</p>
+              </div>
+              <div class="card-action">
+                <ChevronRight class="action-icon" />
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div v-if="isAdmin" class="dashboard-section mt-5">
           <div class="section-header">
             <h3 class="section-title">⚙️ Quản Trị Hệ Thống</h3>
@@ -103,7 +130,7 @@ import { useRouter } from 'vue-router';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 
-// Đã loại bỏ icon Bell (Thông báo)
+// IMPORT THÊM MapPin
 import {
   Users,
   ShieldCheck,
@@ -115,6 +142,7 @@ import {
   CalendarDays,
   ShieldAlert,
   Mail,
+  MapPin,
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -168,8 +196,14 @@ const canAccessStats = computed(() => {
   );
 });
 
+// Quyền truy cập Danh Mục
+const canAccessMasterData = computed(() => {
+  return isAdmin.value || authStore.hasPermission('FUNC_CUSTOMER_MGR');
+});
+
 const hasNoPermissions = computed(
-  () => !isAdmin.value && !canAccessInventory.value
+  () =>
+    !isAdmin.value && !canAccessInventory.value && !canAccessMasterData.value
 );
 
 const contactAdmin = () => {
@@ -204,6 +238,24 @@ const inventoryCards = computed(() => [
   },
 ]);
 
+// CẤU HÌNH CARD DANH MỤC
+const masterDataCards = [
+  {
+    title: 'Khách Hàng & Đối Tác',
+    description: 'Quản lý thông tin, địa chỉ, SĐT của khách hàng.',
+    route: '/admin/customers',
+    icon: Users,
+    colorClass: 'bg-emerald-light text-emerald',
+  },
+  {
+    title: 'Danh Mục Kho Hàng',
+    description: 'Thiết lập các vị trí chi nhánh kho trên hệ thống.',
+    route: '/admin/locations',
+    icon: MapPin,
+    colorClass: 'bg-orange-light text-orange',
+  },
+];
+
 const adminCards = [
   {
     title: 'Quản Lý Người Dùng',
@@ -236,6 +288,10 @@ const adminCards = [
   margin: 0 auto;
   padding-bottom: 2rem;
   animation: fadeIn 0.4s ease-out;
+}
+
+.mt-5 {
+  margin-top: 2rem;
 }
 
 /* BANNER CHÀO MỪNG */
@@ -315,10 +371,7 @@ const adminCards = [
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fill,
-    minmax(320px, 1fr)
-  ); /* Nới rộng card lên xíu */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 1.5rem;
 }
 
@@ -420,6 +473,20 @@ const adminCards = [
 }
 .text-rose {
   color: #be123c;
+}
+
+/* Thêm màu cho Danh Mục (Mới) */
+.bg-emerald-light {
+  background-color: #d1fae5;
+}
+.text-emerald {
+  color: #059669;
+}
+.bg-orange-light {
+  background-color: #ffedd5;
+}
+.text-orange {
+  color: #ea580c;
 }
 
 /* TRẠNG THÁI TRỐNG (EMPTY STATE) */

@@ -98,6 +98,28 @@ const routes = [
         component: () => import('../views/AdminPermissions.vue'),
         meta: { requiresAuth: true, requiresPermission: 'FUNC_ADMIN_ALL' }
     },
+    // ========================================================
+    // NHÓM TRANG DANH MỤC (MASTER DATA)
+    // ========================================================
+    {
+        path: '/admin/customers',
+        name: 'CustomerManagement',
+        component: () => import('../views/CustomerManagement.vue'),
+        meta: {
+            requiresAuth: true,
+            // Cho phép Admin HOẶC nhân viên có quyền Quản lý Khách hàng
+            requiresAnyPermission: ['FUNC_ADMIN_ALL', 'FUNC_CUSTOMER_MGR']
+        }
+    },
+    {
+        path: '/admin/locations',
+        name: 'ViTriKhoManagement',
+        component: () => import('../views/ViTriKhoManagement.vue'),
+        meta: {
+            requiresAuth: true,
+            requiresAnyPermission: ['FUNC_ADMIN_ALL', 'FUNC_CUSTOMER_MGR']
+        }
+    },
 
     // TRANG BÁO LỖI
     {

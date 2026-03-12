@@ -117,17 +117,6 @@ def remove_role_from_user(user_id: int, role_id: int, db: Session = Depends(get_
         db.commit()
     return {"message": f"Đã thu hồi Role {role.code} khỏi User {user.username}"}
 
-# @router.get("/users")
-# def get_all_users(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-#     # Phân trang: bỏ qua 'skip' dòng đầu, lấy 'limit' dòng tiếp theo
-#     users = db.query(User).offset(skip).limit(limit).all()
-#     total = db.query(User).count() # Lấy tổng số để VueJS làm thanh chuyển trang (1, 2, 3...)
-    
-#     return {
-#         "total": total,
-#         "data": users
-#     }
-
 @router.post("/users")
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(User.username == user.username).first()
@@ -159,33 +148,6 @@ def get_all_permissions(db: Session = Depends(get_db)):
     permissions = db.query(Permission).all()
     return permissions
 
-# ---------------------------------------------------------
-# 8. LẤY DANH SÁCH TOÀN BỘ NGƯỜI DÙNG (Dành cho Bảng Quản lý User)
-# ---------------------------------------------------------
-# @router.get("/users")
-# def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-#     """
-#     API này trả về danh sách User (có phân trang).
-#     VueJS sẽ gọi API này để hiển thị lên bảng (Table) quản lý tài khoản.
-#     """
-#     users = db.query(User).offset(skip).limit(limit).all()
-#     total = db.query(User).count()
-    
-#     # Trả về cả tổng số lượng để Frontend làm thanh chuyển trang (Pagination)
-#     return {
-#         "total": total,
-#         "data": [
-#             {
-#                 "id": u.id,
-#                 "username": u.username,
-#                 "full_name": u.full_name
-#             } for u in users
-#         ]
-#     }
-
-# ---------------------------------------------------------
-# 8. LẤY DANH SÁCH TOÀN BỘ NGƯỜI DÙNG (Có kèm Vai trò)
-# ---------------------------------------------------------
 @router.get("/users")
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     # Dùng joinedload để load trước mảng roles, chống N+1 Query
@@ -206,28 +168,6 @@ def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
         ]
     }
 
-# ---------------------------------------------------------
-# 9. ĐỒNG BỘ QUYỀN CHO VAI TRÒ (Cập nhật hàng loạt từ UI Checkbox)
-# ---------------------------------------------------------
-# @router.put("/roles/{role_id}/permissions")
-# def sync_permissions_for_role(role_id: int, payload: SyncData, db: Session = Depends(get_db)):
-#     """
-#     Frontend chỉ cần gửi lên mảng ID: { "ids": [1, 3, 4] }
-#     Hệ thống sẽ tự động thêm quyền 1, 3, 4 và tự động xóa các quyền cũ không có trong mảng.
-#     """
-#     role = db.query(Role).filter(Role.id == role_id).first()
-#     if not role:
-#         raise HTTPException(status_code=404, detail="Không tìm thấy Role")
-    
-#     # Query lấy ra danh sách các Permission tương ứng với mảng ID truyền lên
-#     new_permissions = db.query(Permission).filter(Permission.id.in_(payload.ids)).all()
-    
-#     # MAGIC CỦA SQLALCHEMY: Gán thẳng list mới. Nó tự động thêm/xóa trong bảng role_permissions
-#     role.permissions = new_permissions
-#     db.commit()
-    
-#     return {"message": "Đã cập nhật đồng bộ quyền cho Role thành công"}
-
 @router.put("/roles/{role_id}/permissions")
 def sync_permissions_for_role(role_id: int, payload: SyncData, db: Session = Depends(get_db)):
     role = db.query(Role).filter(Role.id == role_id).first()
@@ -244,26 +184,6 @@ def sync_permissions_for_role(role_id: int, payload: SyncData, db: Session = Dep
     role.permissions = new_permissions
     db.commit()
     return {"message": "Đã cập nhật đồng bộ quyền cho Role thành công"}
-
-# ---------------------------------------------------------
-# 10. ĐỒNG BỘ VAI TRÒ CHO NGƯỜI DÙNG (Cập nhật hàng loạt)
-# ---------------------------------------------------------
-# @router.put("/users/{user_id}/roles")
-# def sync_roles_for_user(user_id: int, payload: SyncData, db: Session = Depends(get_db)):
-#     """
-#     Frontend gửi lên mảng Role ID: { "ids": [1, 2] }
-#     """
-#     user = db.query(User).filter(User.id == user_id).first()
-#     if not user:
-#         raise HTTPException(status_code=404, detail="Không tìm thấy User")
-    
-#     new_roles = db.query(Role).filter(Role.id.in_(payload.ids)).all()
-    
-#     # Gán thẳng list roles mới cho user
-#     user.roles = new_roles
-#     db.commit()
-    
-#     return {"message": "Đã cập nhật đồng bộ Vai trò cho User thành công"}
 
 @router.put("/users/{user_id}/roles")
 def sync_roles_for_user(user_id: int, payload: SyncData, db: Session = Depends(get_db)):

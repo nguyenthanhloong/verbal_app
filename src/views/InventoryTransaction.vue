@@ -15,28 +15,6 @@
           bạn.
         </p>
       </div>
-
-      <!-- <div v-if="isAdmin" class="admin-view-selector mb-4">
-        <span class="label">Góc nhìn Admin:</span>
-        <button
-          :class="['btn-tab', { active: customerMode === 'VIP' }]"
-          @click="setCustomerMode('VIP')"
-        >
-          Khách VIP
-        </button>
-        <button
-          :class="['btn-tab', { active: customerMode === 'THUONG' }]"
-          @click="setCustomerMode('THUONG')"
-        >
-          Khách Thường
-        </button>
-        <button
-          :class="['btn-tab', { active: customerMode === 'LE' }]"
-          @click="setCustomerMode('LE')"
-        >
-          Khách Lẻ
-        </button>
-      </div> -->
       <div v-if="showTabSelector" class="admin-view-selector mb-4">
         <span class="label">Chế độ hiển thị:</span>
         <button
@@ -97,14 +75,95 @@
 
           <form v-if="currentActionObj" @submit.prevent="handleSubmit">
             <div class="form-grid">
+              <div
+                class="form-group full-width"
+                v-if="customerMode === 'THUONG' || customerMode === 'LE'"
+              >
+                <label>Khách Hàng <span class="text-danger">*</span></label>
+                <select v-model="form.customer_id" required>
+                  <option value="" disabled>-- Chọn khách hàng --</option>
+                  <option v-for="c in customers" :key="c.id" :value="c.id">
+                    [{{ c.ma_khach_hang }}] - {{ c.ten_khach_hang }}
+                  </option>
+                </select>
+              </div>
+
+              <div
+                v-if="
+                  (currentAction === 'THUONG_EXPORT' ||
+                    currentAction === 'LE_EXPORT') &&
+                  form.customer_id
+                "
+                class="form-group full-width suggestion-box"
+              >
+                <label style="color: #2e7d32">
+                  <PackageSearch class="icon-sm inline-icon" /> Danh sách hàng
+                  có sẵn để xuất của khách này:
+                </label>
+
+                <div
+                  v-if="isLoadingInventory"
+                  class="text-center p-3 text-muted"
+                >
+                  <RefreshCcw class="icon-sm spin" /> Đang tính toán tồn kho...
+                </div>
+
+                <div
+                  v-else-if="customerInventory.length === 0"
+                  class="empty-inventory"
+                >
+                  Khách hàng này hiện không còn sản phẩm nào tồn trong kho!
+                </div>
+
+                <div v-else class="inventory-list">
+                  <div
+                    v-for="(item, idx) in customerInventory"
+                    :key="idx"
+                    class="inventory-item"
+                    @click="autoFillItem(item)"
+                  >
+                    <div class="item-details">
+                      <strong>{{ item.ten_san_pham }}</strong>
+
+                      <div class="item-meta">
+                        <span v-if="item.ma_san_pham" class="item-code"
+                          >Mã: {{ item.ma_san_pham }}</span
+                        >
+                        <span class="item-stock"
+                          >Tồn:
+                          <b>{{ item.ton_kho.toLocaleString() }}</b> cái</span
+                        >
+                      </div>
+
+                      <div class="item-date text-muted">
+                        Nhập gần nhất: {{ formatDate(item.ngay_nhap_gan_nhat) }}
+                      </div>
+                    </div>
+
+                    <div class="item-actions">
+                      <div class="item-loc">
+                        <MapPin class="icon-xs" /> Kho: {{ item.ma_kho_spl }}
+                      </div>
+                      <button type="button" class="btn-pick">Điền Form</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="form-group">
-                <label>Mã Kho (SPL) <span class="text-danger">*</span></label>
-                <input
-                  type="text"
-                  v-model="form.ma_kho_spl"
-                  required
-                  placeholder="VD: KHO_HCM_01"
-                />
+                <label
+                  >Vị Trí Kho (SPL) <span class="text-danger">*</span></label
+                >
+                <select v-model="form.ma_kho_spl" required>
+                  <option value="" disabled>-- Chọn kho hàng --</option>
+                  <option
+                    v-for="loc in locations"
+                    :key="loc.id"
+                    :value="loc.ma_kho"
+                  >
+                    [{{ loc.ma_kho }}] - {{ loc.ten_kho }}
+                  </option>
+                </select>
               </div>
               <div
                 class="form-group"
@@ -207,6 +266,7 @@
                   type="text"
                   v-model="form.ten_san_pham"
                   placeholder="Tên hàng hóa..."
+                  required
                 />
               </div>
 
@@ -255,11 +315,12 @@
                   />
                 </div>
                 <div class="form-group">
-                  <label>Biển Số Xe</label>
+                  <label>Biển Số Xe <span class="text-danger">*</span></label>
                   <input
                     type="text"
                     v-model="form.bien_so_xe"
                     placeholder="VD: 51H-12345"
+                    required
                   />
                 </div>
               </template>
@@ -333,6 +394,8 @@ import { useAuthStore } from '../stores/auth';
 import { useToast } from '../composables/useToast';
 import { inventoryService } from '../services/inventory';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
+import { customerService } from '../services/customer';
+import { viTriKhoService } from '../services/vi_tri_kho';
 import {
   Archive,
   ArrowDownToLine,
@@ -342,6 +405,8 @@ import {
   Send,
   MousePointerClick,
   ArrowLeft,
+  MapPin,
+  PackageSearch,
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -351,6 +416,11 @@ const isAdmin = computed(() => authStore.hasPermission('FUNC_ADMIN_ALL'));
 const customerMode = ref(''); // 'VIP', 'REGULAR', 'RETAIL'
 const currentAction = ref(''); // Lưu ID của action đang chọn
 const isSubmitting = ref(false);
+
+const customers = ref([]);
+const locations = ref([]);
+const customerInventory = ref([]);
+const isLoadingInventory = ref(false);
 
 // 1. Kiểm tra xem User có quyền vào từng Tab hay không
 const canViewVip = computed(
@@ -464,30 +534,49 @@ const ALL_ACTIONS = [
   },
 ];
 
-// Tự động gán Mode ban đầu dựa vào quyền của User (nếu không phải Admin)
-// onMounted(() => {
-//   if (isAdmin.value) {
-//     customerMode.value = 'VIP'; // Admin mặc định vào tab VIP
-//   } else {
-//     // Tìm mode đầu tiên mà user có ít nhất 1 quyền
-//     const userMode = ['VIP', 'THUONG', 'LE'].find((mode) =>
-//       ALL_ACTIONS.filter((a) => a.mode === mode).some((a) =>
-//         authStore.hasPermission(a.perm)
-//       )
-//     );
-//     customerMode.value = userMode || 'VIP';
-//   }
-// });
+const setCustomerMode = (mode) => {
+  customerMode.value = mode;
+};
+
+const loadCustomers = async () => {
+  try {
+    const res = await customerService.getCustomers(0, 1000);
+    customers.value = res.data;
+  } catch (error) {
+    console.error('Lỗi lấy danh sách KH:', error);
+    toast.error('Không thể tải danh sách khách hàng');
+  }
+};
+
+const loadLocations = async () => {
+  try {
+    const res = await viTriKhoService.getViTriKho();
+    locations.value = res.data;
+  } catch (error) {
+    console.error('Lỗi lấy danh sách kho:', error);
+    toast.error('Không thể tải danh sách vị trí kho');
+  }
+};
+
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const d = new Date(dateString);
+  return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1)
+    .toString()
+    .padStart(2, '0')}/${d.getFullYear()} ${d
+    .getHours()
+    .toString()
+    .padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+};
 
 onMounted(() => {
   if (canViewVip.value) customerMode.value = 'VIP';
   else if (canViewThuong.value) customerMode.value = 'THUONG';
   else if (canViewLe.value) customerMode.value = 'LE';
-});
 
-const setCustomerMode = (mode) => {
-  customerMode.value = mode;
-};
+  loadCustomers();
+  loadLocations();
+});
 
 // Lọc ra các Action bên cột trái dựa vào Mode đang chọn và Quyền của người dùng
 const availableActions = computed(() => {
@@ -513,6 +602,7 @@ const isExportAction = computed(
 // QUẢN LÝ STATE CỦA FORM
 // ==========================================
 const form = ref({
+  customer_id: '',
   ma_kho_spl: '',
   ma_bill: '',
   serial: '',
@@ -532,6 +622,102 @@ const form = ref({
 const isCheckingSerial = ref(false);
 const serialMessage = ref('');
 const serialMessageClass = ref('');
+
+const fetchCustomerInventory = async () => {
+  const newCustId = form.value.customer_id;
+  const newAction = currentAction.value;
+
+  customerInventory.value = [];
+  if (!newCustId) return;
+  if (newAction !== 'THUONG_EXPORT' && newAction !== 'LE_EXPORT') return;
+
+  isLoadingInventory.value = true;
+  try {
+    let imports = [];
+    let exports = [];
+
+    if (newAction === 'THUONG_EXPORT') {
+      const [resIn, resOut] = await Promise.all([
+        inventoryService.getHistoryRegularImport(0, 5000),
+        inventoryService.getHistoryRegularExport(0, 5000),
+      ]);
+      imports = resIn.data.data.filter((i) => i.customer_id === newCustId);
+      exports = resOut.data.data.filter((e) => e.customer_id === newCustId);
+    } else {
+      const [resIn, resOut] = await Promise.all([
+        inventoryService.getHistoryRetailImport(0, 5000),
+        inventoryService.getHistoryRetailExport(0, 5000),
+      ]);
+      imports = resIn.data.data.filter((i) => i.customer_id === newCustId);
+      exports = resOut.data.data.filter((e) => e.customer_id === newCustId);
+    }
+
+    const stockMap = {};
+
+    imports.forEach((item) => {
+      const key =
+        newAction === 'THUONG_EXPORT'
+          ? `${item.ma_san_pham}_${item.ma_kho_spl}`
+          : `${item.ten_san_pham}_${item.ma_kho_spl}`;
+
+      if (!stockMap[key]) {
+        stockMap[key] = {
+          ...item,
+          tong_nhap: 0,
+          tong_xuat: 0,
+          ngay_nhap_gan_nhat: item.ngay,
+        };
+      }
+      stockMap[key].tong_nhap += item.so_luong;
+      if (new Date(item.ngay) > new Date(stockMap[key].ngay_nhap_gan_nhat)) {
+        stockMap[key].ngay_nhap_gan_nhat = item.ngay;
+      }
+    });
+
+    exports.forEach((item) => {
+      const key =
+        newAction === 'THUONG_EXPORT'
+          ? `${item.ma_san_pham}_${item.ma_kho_spl}`
+          : `${item.ten_san_pham}_${item.ma_kho_spl}`;
+
+      if (stockMap[key]) {
+        stockMap[key].tong_xuat += item.so_luong;
+      }
+    });
+
+    const availableItems = [];
+    Object.values(stockMap).forEach((item) => {
+      const remaining = item.tong_nhap - item.tong_xuat;
+      if (remaining > 0) {
+        availableItems.push({
+          ...item,
+          ton_kho: remaining,
+        });
+      }
+    });
+
+    customerInventory.value = availableItems;
+  } catch (error) {
+    console.error('Lỗi khi tải tồn kho:', error);
+  } finally {
+    isLoadingInventory.value = false;
+  }
+};
+
+watch([() => form.value.customer_id, currentAction], () => {
+  fetchCustomerInventory();
+});
+
+const autoFillItem = (item) => {
+  form.value.ma_kho_spl = item.ma_kho_spl;
+  form.value.ten_san_pham = item.ten_san_pham;
+  if (currentAction.value === 'THUONG_EXPORT') {
+    form.value.ma_san_pham = item.ma_san_pham;
+  }
+  toast.success(
+    `Bạn đang xuất "${item.ten_san_pham}". (Tồn kho: ${item.ton_kho})`
+  );
+};
 
 // Hàm kiểm tra Serial
 const checkSerial = async () => {
@@ -697,10 +883,9 @@ const handleSubmit = async () => {
     }
     // =========================================================================================
     else if (currentAction.value === 'THUONG_IMPORT') {
-      // const generatedId = stringToId(form.value.ma_san_pham); // Dùng mã SP làm ID
-      // Dùng tạm mã sản phẩm làm ID định danh cho Lô theo chuẩn backend của bạn
       payload = {
         id: 0,
+        customer_id: form.value.customer_id,
         ma_kho_spl: form.value.ma_kho_spl,
         ten_san_pham: form.value.ten_san_pham,
         ma_san_pham: form.value.ma_san_pham,
@@ -709,9 +894,9 @@ const handleSubmit = async () => {
       };
       await inventoryService.importRegular(payload);
     } else if (currentAction.value === 'THUONG_EXPORT') {
-      // const generatedId = stringToId(form.value.ma_san_pham);
       payload = {
         id: 0,
+        customer_id: form.value.customer_id,
         ma_kho_spl: form.value.ma_kho_spl,
         ten_san_pham: form.value.ten_san_pham,
         ma_san_pham: form.value.ma_san_pham,
@@ -721,14 +906,13 @@ const handleSubmit = async () => {
         ma_bill: form.value.ma_bill,
         ghi_chu: form.value.ghi_chu,
       };
-      console.log(payload);
       await inventoryService.exportRegular(payload);
     }
     // Tương tự cho Retail...
     else if (currentAction.value === 'LE_IMPORT') {
-      // const generatedId = stringToId(form.value.ten_san_pham);
       payload = {
         id: 0,
+        customer_id: form.value.customer_id,
         ma_kho_spl: form.value.ma_kho_spl,
         ten_san_pham: form.value.ten_san_pham,
         so_luong: form.value.so_luong,
@@ -736,10 +920,10 @@ const handleSubmit = async () => {
       };
       await inventoryService.importRetail(payload);
     } else if (currentAction.value === 'LE_EXPORT') {
-      // const generatedId = stringToId(form.value.ten_san_pham);
       payload = {
         id: 0,
-        ma_kho_spl: form.value.ma_kho_spl,
+        customer_id: form.value.customer_id,
+        ma_kho_sql: form.value.ma_kho_spl,
         ten_san_pham: form.value.ten_san_pham,
         so_luong: form.value.so_luong,
         nv_giao_hang: form.value.nv_giao_hang,
@@ -747,11 +931,15 @@ const handleSubmit = async () => {
         ma_bill: form.value.ma_bill,
         ghi_chu: form.value.ghi_chu,
       };
+      console.log(payload);
       await inventoryService.exportRetail(payload);
     }
 
     toast.success('Gửi phiếu yêu cầu thành công!');
     resetForm();
+    if (customerMode.value === 'THUONG' || customerMode.value === 'LE') {
+      await fetchCustomerInventory();
+    }
   } catch (error) {
     toast.error(
       error.response?.data?.detail ||
@@ -884,6 +1072,7 @@ const handleSubmit = async () => {
   font-size: 0.9rem;
 }
 .form-group input,
+.form-group select,
 .form-group textarea {
   width: 100%;
   padding: 10px 12px;
@@ -893,13 +1082,19 @@ const handleSubmit = async () => {
   transition: border-color 0.2s;
   box-sizing: border-box;
 }
+.form-group select {
+  appearance: auto;
+  cursor: pointer;
+}
 .form-group input:focus,
+.form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: #2e7d32;
   box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
 }
-.form-group input:disabled {
+.form-group input:disabled,
+.form-group select:disabled {
   background-color: #f1f5f9;
   cursor: not-allowed;
 }
@@ -935,5 +1130,85 @@ const handleSubmit = async () => {
 .icon-sm {
   width: 18px;
   height: 18px;
+}
+
+.suggestion-box {
+  background-color: #f8fff9;
+  border: 1px dashed #2e7d32;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.inline-icon {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.empty-inventory {
+  text-align: center;
+  color: #ef4444;
+  font-style: italic;
+  padding: 10px;
+  background: #fef2f2;
+  border-radius: 6px;
+}
+.inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.inventory-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 10px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.inventory-item:hover {
+  border-color: #2e7d32;
+  box-shadow: 0 2px 5px rgba(46, 125, 50, 0.1);
+}
+.item-details strong {
+  display: block;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+.item-code {
+  font-size: 0.8rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.item-loc {
+  font-size: 0.85rem;
+  color: #f59e0b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.icon-xs {
+  width: 14px;
+  height: 14px;
+}
+.btn-pick {
+  background: #2e7d32;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+.btn-pick:hover {
+  background: #1b5e20;
 }
 </style>
