@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import warehouse, admin, auth, users, inventory, vi_tri_kho, customers
+from .routers import warehouse, admin, auth, users, vi_tri_kho, customers
 from .database import engine, Base
 
 # (Tuỳ chọn) Tự động tạo bảng nếu chưa có, nhưng bạn đã tạo bằng SQL rồi thì có thể bỏ qua dòng này
