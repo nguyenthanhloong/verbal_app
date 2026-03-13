@@ -437,8 +437,6 @@ const downloadExcel = async (maBill, maKho) => {
     let response;
     let fileName = '';
 
-    console.log(maBill, maKho);
-
     if (currentMode.value === 'VIP') {
       if (actionType.value === 'EXPORT_OLD') {
         response = await inventoryService.exportExcelVipOld(maBill);
@@ -448,7 +446,6 @@ const downloadExcel = async (maBill, maKho) => {
         fileName = `Phieu_Xuat_Giao_Hang_${maBill}.xlsx`;
       }
     } else if (currentMode.value === 'THUONG') {
-      console.log(maBill, maKho);
       response = await inventoryService.exportExcelRegular(maBill, maKho);
       fileName = `Phieu_Xuat_Kho_Thuong_${maBill}_${maKho}.xlsx`;
     } else if (currentMode.value === 'LE') {

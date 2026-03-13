@@ -931,7 +931,6 @@ const handleSubmit = async () => {
         ma_bill: form.value.ma_bill,
         ghi_chu: form.value.ghi_chu,
       };
-      console.log(payload);
       await inventoryService.exportRetail(payload);
     }
 
