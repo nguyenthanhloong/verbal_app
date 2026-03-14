@@ -46,7 +46,7 @@ apiClient.interceptors.response.use(
             if (!isSessionExpired) {
                 isSessionExpired = true; // Kéo cờ lên để chặn các request 401 khác (nếu có)
 
-                console.error("Token hết hạn hoặc không hợp lệ. Đang đăng xuất...");
+                // console.error("Token hết hạn hoặc không hợp lệ. Đang đăng xuất...");
 
                 const authStore = useAuthStore();
 

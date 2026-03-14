@@ -8,7 +8,7 @@ from sqlalchemy.sql import func
 
 def get_vietnam_time():
     return datetime.now(zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh"))
-
+ 
 # Bảng trung gian
 user_roles = Table('user_roles', Base.metadata,
     Column('user_id', BigInteger, ForeignKey('users.id', ondelete="CASCADE"), primary_key=True),

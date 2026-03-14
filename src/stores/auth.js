@@ -123,7 +123,7 @@ export const useAuthStore = defineStore('auth', {
                 this.permissions = perms;
 
             } catch (error) {
-                console.error("Lỗi lấy thông tin cá nhân:", error);
+                // console.error("Lỗi lấy thông tin cá nhân:", error);
                 this.logout(true); // Nếu token hỏng trên server thì ép văng
             }
         },
