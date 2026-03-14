@@ -3,7 +3,11 @@ from sqlalchemy import  Column, BigInteger, Integer, String, ForeignKey, Table, 
 from sqlalchemy.orm import relationship
 from .database import Base
 from datetime import datetime, date
+import zoneinfo
 from sqlalchemy.sql import func
+
+def get_vietnam_time():
+    return datetime.now(zoneinfo.ZoneInfo("Asia/Ho_Chi_Minh"))
 
 # Bảng trung gian
 user_roles = Table('user_roles', Base.metadata,
@@ -53,7 +57,7 @@ class ImportNew(Base):
     ma_bill = Column(String(100))
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
-    ngay = Column(DateTime, default=datetime.now) # Tự động lấy ngày hiện tại
+    ngay = Column(DateTime, default=get_vietnam_time) # Tự động lấy ngày hiện tại
 
 class ExportNew(Base):
     __tablename__ = 'export_new'
@@ -67,7 +71,7 @@ class ExportNew(Base):
     ma_bill = Column(String(100))
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
     ngay_nhap_kho = Column(Date) # Sẽ copy từ import_new sang
 
 class ImportOld(Base):
@@ -78,7 +82,7 @@ class ImportOld(Base):
     ma_bill = Column(String(100))
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
 
 class ExportOld(Base):
     __tablename__ = 'export_old'
@@ -92,7 +96,7 @@ class ExportOld(Base):
     nguoi_nhan = Column(String(100))
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
     ngay_nhap_kho = Column(Date)
 
 class ImportThuong(Base):
@@ -102,7 +106,7 @@ class ImportThuong(Base):
 
     # Khóa chính kép: 1 sản phẩm nhập trong 1 ngày tạo thành 1 Lô (Batch)
     id = Column(BigInteger) 
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
     
     ma_kho_spl = Column(String(50))
     ten_san_pham = Column(String(255))
@@ -129,7 +133,7 @@ class ExportThuong(Base):
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
     
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
     ngay_nhap_kho = Column(Date)            # RULE 3: Lưu ngày của lô nhập (Batch Date)
     customer_id = Column(BigInteger, ForeignKey("customers.id", ondelete="SET NULL"))
     customer = relationship("Customer")
@@ -137,11 +141,10 @@ class ExportThuong(Base):
 class ImportLe(Base):
     __tablename__ = 'import_le'
 
-    # THÊM DÒNG NÀY LÀM KHÓA CHÍNH MỚI
     record_id = Column(BigInteger, primary_key=True, autoincrement=True)
 
     id = Column(BigInteger) 
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
     
     ma_kho_spl = Column(String(50))
     ten_san_pham = Column(String(255))
@@ -167,7 +170,7 @@ class ExportLe(Base):
     nv_nhap_lieu = Column(String(100))
     ghi_chu = Column(Text)
     
-    ngay = Column(DateTime, default=datetime.now)
+    ngay = Column(DateTime, default=get_vietnam_time)
     ngay_nhap_kho = Column(Date)
     customer_id = Column(BigInteger, ForeignKey("customers.id", ondelete="SET NULL"))
     customer = relationship("Customer")
@@ -179,7 +182,7 @@ class ViTriKho(Base):
     ma_kho = Column(String(50), unique=True, nullable=False)
     ten_kho = Column(String(255), nullable=False)
     nguoi_tao = Column(String(100))
-    ngay_tao = Column(DateTime, server_default=func.now())
+    ngay_tao = Column(DateTime, default=get_vietnam_time)
 
 class Customer(Base):
     __tablename__ = "customers"
