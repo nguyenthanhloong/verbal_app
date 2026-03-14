@@ -6,7 +6,6 @@
       </button>
       <div class="page-header">
         <div class="title-group">
-          <!-- <Archive class="title-icon" /> -->
           <h2>Lập Phiếu Yêu Cầu Giao / Nhận Hàng</h2>
         </div>
 
@@ -217,21 +216,19 @@
               </div>
               <template v-if="currentAction === 'VIP_IMPORT_NEW'">
                 <div class="form-group">
-                  <label>PXK Kho TSB <span class="text-danger">*</span></label>
+                  <label>PXK Kho TSB</label>
                   <input
                     type="text"
                     v-model="form.pxk_kho_tsb"
                     placeholder="Phiếu xuất kho TSB..."
-                    required
                   />
                 </div>
                 <div class="form-group">
-                  <label>PXK VP TSB <span class="text-danger">*</span></label>
+                  <label>PXK VP TSB</label>
                   <input
                     type="text"
                     v-model="form.pxk_vp_tsb"
                     placeholder="Phiếu xuất VP TSB..."
-                    required
                   />
                 </div>
               </template>
@@ -330,12 +327,16 @@
               <template v-if="currentAction === 'VIP_EXPORT_OLD'">
                 <div class="form-group">
                   <label>Kho Trả Hàng <span class="text-danger">*</span></label>
-                  <input
-                    type="text"
-                    v-model="form.kho_tra_hang"
-                    required
-                    placeholder="Tên kho nhận trả..."
-                  />
+                  <select v-model="form.kho_tra_hang" required>
+                    <option value="" disabled>-- Chọn kho nhận trả --</option>
+                    <option
+                      v-for="loc in locations"
+                      :key="loc.id"
+                      :value="loc.ma_kho"
+                    >
+                      [{{ loc.ma_kho }}] - {{ loc.ten_kho }}
+                    </option>
+                  </select>
                 </div>
                 <div class="form-group">
                   <label>Người Nhận <span class="text-danger">*</span></label>
@@ -423,6 +424,10 @@ const customers = ref([]);
 const locations = ref([]);
 const customerInventory = ref([]);
 const isLoadingInventory = ref(false);
+
+const isCheckingSerial = ref(false);
+const serialMessage = ref('');
+const serialMessageClass = ref('');
 
 // 1. Kiểm tra xem User có quyền vào từng Tab hay không
 const canViewVip = computed(
@@ -620,10 +625,6 @@ const form = ref({
   pxk_kho_tsb: '',
   pxk_vp_tsb: '',
 });
-
-const isCheckingSerial = ref(false);
-const serialMessage = ref('');
-const serialMessageClass = ref('');
 
 const fetchCustomerInventory = async () => {
   const newCustId = form.value.customer_id;
@@ -856,6 +857,7 @@ const handleSubmit = async () => {
     } else if (currentAction.value === 'VIP_EXPORT_NEW') {
       payload = {
         serial_moi: form.value.serial,
+        ma_kho_spl: form.value.ma_kho_spl,
         nv_giao_hang: form.value.nv_giao_hang,
         bien_so_xe: form.value.bien_so_xe,
         ma_bill: form.value.ma_bill,
@@ -933,6 +935,7 @@ const handleSubmit = async () => {
         ma_bill: form.value.ma_bill,
         ghi_chu: form.value.ghi_chu,
       };
+      console.log(payload);
       await inventoryService.exportRetail(payload);
     }
 

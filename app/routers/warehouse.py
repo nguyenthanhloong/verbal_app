@@ -99,8 +99,13 @@ def nhap_kho_moi_vip(payload: ImportNewCreate, db: Session = Depends(get_db), cu
 def xuat_kho_moi_vip(payload: ExportNewCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     serial = payload.serial_moi
     import_record = db.query(ImportNew).filter(ImportNew.serial_moi == serial).first()
+
     if not import_record:
         raise HTTPException(status_code=400, detail=f"Lỗi: Không tìm thấy Serial '{serial}' trong kho mới!")
+    #//
+    if import_record.ma_kho_spl != payload.ma_kho_spl:
+        raise HTTPException(status_code=400, detail=f"Lỗi: Thiết bị này đang ở kho '{import_record.ma_kho_spl}', bạn không thể xuất nó từ kho '{payload.ma_kho_spl}'!") 
+    #//
         
     kiem_tra_da_xuat = db.query(ExportNew).filter(ExportNew.serial_moi == serial).first()
     if kiem_tra_da_xuat:
@@ -124,6 +129,17 @@ def nhap_kho_cu(payload: ImportOldCreate, db: Session = Depends(get_db), current
     if not original_device:
         raise HTTPException(status_code=400, detail=f"Lỗi: Không tìm thấy Serial '{serial_cu}'. Hàng này chưa từng được bán ra!")
     
+    # THÊM ĐOẠN NÀY: Kiểm tra xem đã xuất giao hàng chưa
+    kiem_tra_da_xuat_giao = db.query(ExportNew).filter(ExportNew.serial_moi == serial_cu).first()
+    if not kiem_tra_da_xuat_giao:
+         raise HTTPException(status_code=400, detail=f"Lỗi: Thiết bị '{serial_cu}' vẫn đang nằm trong kho mới, chưa từng được xuất giao cho khách nên không thể làm phiếu Khách trả hàng!")
+    
+    if payload.ma_kho_spl != kiem_tra_da_xuat_giao.ma_kho_spl:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Lỗi sai kho: Thiết bị này trước đây được xuất bán từ kho '{kiem_tra_da_xuat_giao.ma_kho_spl}'. Bạn không thể nhận hàng trả lại vào kho '{payload.ma_kho_spl}'!"
+        )
+    
     kiem_tra_da_nhap_cu = db.query(ImportOld).filter(ImportOld.serial_cu == serial_cu).first()
     if kiem_tra_da_nhap_cu:
         raise HTTPException(status_code=400, detail=f"Lỗi: Serial '{serial_cu}' hiện đang nằm trong Kho Trả Hàng rồi! Không thể nhập lại.")
@@ -142,6 +158,10 @@ def xuat_kho_cu(payload: ExportOldCreate, db: Session = Depends(get_db), current
     import_old_record = db.query(ImportOld).filter(ImportOld.serial_cu == serial_cu).first()
     if not import_old_record:
         raise HTTPException(status_code=400, detail=f"Lỗi: Serial '{serial_cu}' không có mặt trong Kho Trả Hàng!")
+    
+    # THÊM ĐOẠN NÀY:
+    if import_old_record.ma_kho_spl != payload.ma_kho_spl:
+        raise HTTPException(status_code=400, detail=f"Lỗi: Thiết bị này đang ở kho '{import_old_record.ma_kho_spl}', bạn không thể xuất trả từ kho '{payload.ma_kho_spl}'!")
         
     kiem_tra_da_xuat_cu = db.query(ExportOld).filter(ExportOld.serial_cu == serial_cu).first()
     if kiem_tra_da_xuat_cu:
@@ -423,9 +443,23 @@ def get_ton_kho_le(db: Session = Depends(get_db), current_user: User = Depends(g
 # ==============================================================================
 # (Bạn giữ nguyên các hàm xuất Excel của bạn ở vị trí này)
 @router.get("/api/warehouse/vip/export-old/excel/{ma_bill}", tags=["Xuất Excel"])
-def export_excel_vip_old(ma_bill: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    records = db.query(ExportOld, ImportNew.ma_may).outerjoin(ImportNew, ExportOld.serial_cu == ImportNew.serial_moi).filter(ExportOld.ma_bill == ma_bill).all()
-    if not records: raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu cho Mã Bill này!")
+def export_excel_vip_old(ma_bill: str, ma_kho_spl: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+
+    clean_bill = ma_bill.strip()
+    clean_kho = ma_kho_spl.strip()
+
+    # [ĐÃ FIX BUG]: Gom chung điều kiện lấy Mã Máy (từ bảng ImportNew) và 
+    # Lọc theo ma_bill VÀ ma_kho_spl (từ bảng ExportOld) vào chung 1 câu lệnh Query duy nhất!
+    records = db.query(ExportOld, ImportNew.ma_may).outerjoin(
+        ImportNew, ExportOld.serial_cu == ImportNew.serial_moi
+    ).filter(
+        ExportOld.ma_bill.like(f"%{clean_bill}%"),
+        ExportOld.ma_kho_spl.like(f"%{clean_kho}%")
+    ).all()
+
+    if not records: 
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy dữ liệu cho Mã Bill '{clean_bill}' tại kho '{clean_kho}'!")
+
     first_record = records[0].ExportOld
     total_items = len(records)
     wb = openpyxl.Workbook()
@@ -507,9 +541,19 @@ def export_excel_vip_old(ma_bill: str, db: Session = Depends(get_db), current_us
     return StreamingResponse(stream, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", headers={"Content-Disposition": f"attachment; filename=Phieu_Xuat_Tra_{ma_bill}.xlsx"})
 
 @router.get("/api/warehouse/vip/export-new/excel/{ma_bill}", tags=["Xuất Excel"])
-def export_excel_vip_new(ma_bill: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    records = db.query(ExportNew).filter(ExportNew.ma_bill == ma_bill).all()
-    if not records: raise HTTPException(status_code=404, detail="Không tìm thấy dữ liệu cho Mã Bill này!")
+def export_excel_vip_new(ma_bill: str,ma_kho_spl: str, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+
+    clean_bill = ma_bill.strip()
+    clean_kho = ma_kho_spl.strip()
+
+    records = db.query(ExportNew).filter(
+        ExportNew.ma_bill.like(f"%{clean_bill}%"),
+        ExportNew.ma_kho_spl.like(f"%{clean_kho}%")
+    ).all()
+
+    if not records: 
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy dữ liệu cho Mã Bill '{clean_bill}' tại kho '{clean_kho}'!")
+
     first_record = records[0]
     wb = openpyxl.Workbook()
     ws = wb.active

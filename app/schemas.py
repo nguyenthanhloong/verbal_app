@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 
 class UserLogin(BaseModel):
@@ -94,6 +94,7 @@ class ImportNewCreate(BaseModel):
 class ExportNewCreate(BaseModel):
     serial_moi: str
     nv_giao_hang: str
+    ma_kho_spl: str
     bien_so_xe: Optional[str] = None
     ma_bill: str
     ghi_chu: Optional[str] = None
@@ -156,8 +157,6 @@ class ExportLeCreate(BaseModel):
     ma_bill: str
     ghi_chu: Optional[str] = None
     
-from pydantic import BaseModel
-from typing import Dict, Any, Optional
 
 class TransactionDynamicCreate(BaseModel):
     action_code: str
@@ -180,7 +179,6 @@ class ViTriKhoBase(BaseModel):
 class ViTriKhoCreate(ViTriKhoBase):
     pass
 
-# ĐÃ SỬA: Bỏ ma_kho, chỉ cho phép truyền ten_kho lên để sửa
 class ViTriKhoUpdate(BaseModel):
     ten_kho: str 
 
@@ -191,10 +189,6 @@ class ViTriKhoOut(ViTriKhoBase):
 
     class Config:
         from_attributes = True
-
-# app/schemas.py
-from pydantic import BaseModel
-from typing import Optional
 
 class CustomerBase(BaseModel):
     ma_khach_hang: str

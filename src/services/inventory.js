@@ -77,8 +77,8 @@ export const inventoryService = {
     getInventoryRetail: () => apiClient.get('/api/warehouse/le/ton-kho'),
 
     // 6. XUẤT EXCEL
-    exportExcelVipOld: (maBill) => apiClient.get(`/api/warehouse/vip/export-old/excel/${maBill}`, { responseType: 'blob' }),
-    exportExcelVipNew: (maBill) => apiClient.get(`/api/warehouse/vip/export-new/excel/${maBill}`, { responseType: 'blob' }),
+    exportExcelVipOld: (maBill, maKho) => apiClient.get(`/api/warehouse/vip/export-old/excel/${maBill}?ma_kho_spl=${maKho}`, { responseType: 'blob' }),
+    exportExcelVipNew: (maBill, maKho) => apiClient.get(`/api/warehouse/vip/export-new/excel/${maBill}?ma_kho_spl=${maKho}`, { responseType: 'blob' }),
 
     exportExcelRegular: (maBill, maKho) => apiClient.get(`/api/warehouse/thuong/export/excel/${maBill}?ma_kho_spl=${maKho}`, { responseType: 'blob' }),
     exportExcelRetail: (maBill, maKho) => apiClient.get(`/api/warehouse/le/export/excel/${maBill}?ma_kho_spl=${maKho}`, { responseType: 'blob' }),

@@ -6,7 +6,6 @@
       </button>
       <div class="page-header">
         <div class="title-group">
-          <!-- <History class="title-icon" /> -->
           <h2>Lịch Sử Giao Dịch</h2>
         </div>
         <p class="text-muted">
@@ -437,15 +436,18 @@ const downloadExcel = async (maBill, maKho) => {
     let response;
     let fileName = '';
 
+    console.log(maBill, maKho);
+
     if (currentMode.value === 'VIP') {
       if (actionType.value === 'EXPORT_OLD') {
-        response = await inventoryService.exportExcelVipOld(maBill);
+        response = await inventoryService.exportExcelVipOld(maBill, maKho);
         fileName = `Phieu_Xuat_Tra_${maBill}.xlsx`;
       } else if (actionType.value === 'EXPORT_NEW') {
-        response = await inventoryService.exportExcelVipNew(maBill);
+        response = await inventoryService.exportExcelVipNew(maBill, maKho);
         fileName = `Phieu_Xuat_Giao_Hang_${maBill}.xlsx`;
       }
     } else if (currentMode.value === 'THUONG') {
+      console.log(maBill, maKho);
       response = await inventoryService.exportExcelRegular(maBill, maKho);
       fileName = `Phieu_Xuat_Kho_Thuong_${maBill}_${maKho}.xlsx`;
     } else if (currentMode.value === 'LE') {
