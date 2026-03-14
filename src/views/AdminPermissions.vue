@@ -118,7 +118,7 @@
             >
           </div>
           <div class="form-group">
-            <label>Tên hiển thị</label>
+            <label>Tên hiển thị <span class="text-danger">*</span></label>
             <input
               type="text"
               v-model="form.name"

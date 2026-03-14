@@ -138,7 +138,7 @@
             />
           </div>
           <div class="form-group">
-            <label>Tên Vai trò</label>
+            <label>Tên Vai trò <span class="text-danger">*</span></label>
             <input
               type="text"
               v-model="roleForm.name"

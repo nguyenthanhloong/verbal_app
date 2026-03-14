@@ -1,10 +1,18 @@
 <template>
-  <div v-if="appStore.isLoading" class="loading-overlay">
-    <div class="spinner-box">
-      <Loader2 class="spinner-icon" />
-      <p>Đang xử lý...</p>
+  <Transition name="fade">
+    <div v-if="appStore.isLoading" class="loading-overlay">
+      <div class="loading-card">
+        <div class="icon-wrapper">
+          <Loader2 class="spinner-icon" stroke-width="2.5" />
+        </div>
+
+        <div class="text-content">
+          <h3>Đang xử lý...</h3>
+          <p>Hệ thống đang đồng bộ dữ liệu kho, vui lòng đợi.</p>
+        </div>
+      </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -15,34 +23,76 @@ const appStore = useAppStore();
 </script>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+  backdrop-filter: blur(0px);
+}
+
 .loading-overlay {
   position: fixed;
   inset: 0;
-  /* Phủ lớp màu tối hơi trong suốt và làm mờ nền phía sau */
-  background-color: rgba(15, 61, 38, 0.4);
-  backdrop-filter: blur(2px);
+  background-color: rgba(17, 24, 39, 0.55);
+  backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999; /* Đảm bảo nó luôn nằm trên cùng mọi thứ (kể cả Modal) */
+  z-index: 9999;
 }
 
-.spinner-box {
-  background: white;
-  padding: 1.5rem 2.5rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+.loading-card {
+  background: #ffffff;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 20px;
+  min-width: 340px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  animation: slideUp 0.3s ease-out forwards;
+}
+
+.icon-wrapper {
+  background: #e8f5e9;
+  padding: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .spinner-icon {
-  width: 40px;
-  height: 40px;
-  color: #2e7d32; /* Màu xanh lá secondary */
-  animation: spin 1s linear infinite; /* Hiệu ứng xoay tròn */
+  width: 28px;
+  height: 28px;
+  color: #2e7d32;
+  animation: spin 1s linear infinite;
+}
+
+.text-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.text-content h3 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.text-content p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.4;
 }
 
 @keyframes spin {
@@ -51,10 +101,14 @@ const appStore = useAppStore();
   }
 }
 
-p {
-  margin: 0;
-  color: #0f3d26;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+@keyframes slideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

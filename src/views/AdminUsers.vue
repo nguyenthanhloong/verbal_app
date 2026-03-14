@@ -181,7 +181,7 @@
             />
           </div>
           <div class="form-group">
-            <label>Họ và Tên</label>
+            <label>Họ và Tên <span class="text-danger">*</span></label>
             <input
               type="text"
               v-model="userForm.full_name"

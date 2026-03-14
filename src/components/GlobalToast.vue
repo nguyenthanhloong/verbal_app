@@ -9,10 +9,21 @@
       >
         <div class="toast-icon">
           <CheckCircle v-if="toast.type === 'success'" />
-          <AlertCircle v-if="toast.type === 'error'" />
+          <AlertCircle v-else-if="toast.type === 'error'" />
+          <AlertTriangle v-else-if="toast.type === 'warning'" />
+          <Info v-else />
         </div>
-        <div class="toast-content">{{ toast.message }}</div>
-        <button class="toast-close" @click="removeToast(toast.id)">
+
+        <div class="toast-content">
+          <p v-if="toast.title" class="toast-title">{{ toast.title }}</p>
+          <p class="toast-message">{{ toast.message }}</p>
+        </div>
+
+        <button
+          class="toast-close"
+          @click="removeToast(toast.id)"
+          aria-label="Đóng"
+        >
           <X class="icon-sm" />
         </button>
       </div>
@@ -22,7 +33,13 @@
 
 <script setup>
 import { useToast } from '../composables/useToast';
-import { CheckCircle, AlertCircle, X } from 'lucide-vue-next';
+import {
+  CheckCircle,
+  AlertCircle,
+  AlertTriangle,
+  Info,
+  X,
+} from 'lucide-vue-next';
 
 const { toasts, removeToast } = useToast();
 </script>
@@ -30,78 +47,123 @@ const { toasts, removeToast } = useToast();
 <style scoped>
 .toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 24px;
+  right: 24px;
   z-index: 10000;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  pointer-events: none;
 }
 
 .toast-item {
+  pointer-events: auto;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 16px;
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  min-width: 300px;
-  color: white;
-  font-weight: 500;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  min-width: 320px;
+  max-width: 400px;
+  border: 1px solid #f3f4f6;
+  border-left-width: 4px;
 }
 
-/* Màu sắc theo Theme của bạn */
 .toast-success {
-  background-color: #2e7d32;
-  border-left: 6px solid #4caf50;
+  border-left-color: #10b981;
 }
+.toast-success .toast-icon {
+  color: #10b981;
+}
+
 .toast-error {
-  background-color: #ef4444;
-  border-left: 6px solid #b91c1c;
+  border-left-color: #ef4444;
 }
+.toast-error .toast-icon {
+  color: #ef4444;
+}
+
+.toast-warning {
+  border-left-color: #f59e0b;
+}
+.toast-warning .toast-icon {
+  color: #f59e0b;
+}
+
 .toast-info {
-  background-color: #5378e5;
-  border-left: 6px solid #2481e4;
+  border-left-color: #3b82f6;
+}
+.toast-info .toast-icon {
+  color: #3b82f6;
 }
 
 .toast-icon {
-  display: flex;
-  align-items: center;
-  width: 24px;
-  height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
 }
+.toast-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .toast-content {
   flex: 1;
-  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+.toast-title {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.toast-message {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.4;
+}
+
 .toast-close {
   background: none;
   border: none;
-  color: white;
+  color: #9ca3af;
   cursor: pointer;
-  opacity: 0.7;
-  transition: 0.2s;
+  padding: 4px;
+  margin: -4px -4px 0 0;
+  border-radius: 4px;
   display: flex;
-}
-.toast-close:hover {
-  opacity: 1;
-}
-.icon-sm {
-  width: 16px;
-  height: 16px;
+  transition: all 0.2s;
 }
 
-/* Hiệu ứng trượt vào/ra (Vue Transition) */
+.toast-close:hover {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.toast-move,
 .toast-enter-active,
 .toast-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 .toast-enter-from {
   opacity: 0;
-  transform: translateX(50px);
+  transform: translateX(100%);
 }
+
 .toast-leave-to {
   opacity: 0;
-  transform: translateX(50px);
+  transform: scale(0.95);
+}
+
+.toast-leave-active {
+  position: absolute;
 }
 </style>
