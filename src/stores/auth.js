@@ -94,7 +94,7 @@ export const useAuthStore = defineStore('auth', {
                 await this.fetchMyProfile();
                 return true;
             } catch (error) {
-                console.error("Lỗi đăng nhập:", error);
+                // console.error("Lỗi đăng nhập:", error);
                 throw error;
             }
         },

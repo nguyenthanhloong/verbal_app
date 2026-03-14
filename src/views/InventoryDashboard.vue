@@ -323,7 +323,7 @@ const fetchChartData = async () => {
       ];
     }
   } catch (error) {
-    console.error('Lỗi khi tải biểu đồ:', error);
+    // console.error('Lỗi khi tải biểu đồ:', error);
   }
 };
 
@@ -341,7 +341,7 @@ const fetchData = async () => {
 
     if (response) inventoryData.value = response.data.data;
   } catch (error) {
-    console.error('Lỗi tải tồn kho:', error);
+    // console.error('Lỗi tải tồn kho:', error);
     toast.error('Không thể tải dữ liệu tồn kho!');
   } finally {
     isLoading.value = false;

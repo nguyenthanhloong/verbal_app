@@ -547,7 +547,7 @@ const loadCustomers = async () => {
     const res = await customerService.getCustomers(0, 1000);
     customers.value = res.data;
   } catch (error) {
-    console.error('Lỗi lấy danh sách KH:', error);
+    // console.error('Lỗi lấy danh sách KH:', error);
     toast.error('Không thể tải danh sách khách hàng');
   }
 };
@@ -557,7 +557,7 @@ const loadLocations = async () => {
     const res = await viTriKhoService.getViTriKho();
     locations.value = res.data;
   } catch (error) {
-    console.error('Lỗi lấy danh sách kho:', error);
+    // console.error('Lỗi lấy danh sách kho:', error);
     toast.error('Không thể tải danh sách vị trí kho');
   }
 };
@@ -698,7 +698,7 @@ const fetchCustomerInventory = async () => {
 
     customerInventory.value = availableItems;
   } catch (error) {
-    console.error('Lỗi khi tải tồn kho:', error);
+    // console.error('Lỗi khi tải tồn kho:', error);
   } finally {
     isLoadingInventory.value = false;
   }
@@ -757,7 +757,7 @@ const checkSerial = async () => {
       form.value.ma_kho_spl = '';
     }
   } catch (error) {
-    console.error(error);
+    // console.error(error);
     toast.error('Lỗi khi kết nối đến máy chủ để kiểm tra Serial.');
   } finally {
     isCheckingSerial.value = false;

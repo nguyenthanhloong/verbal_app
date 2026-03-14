@@ -390,7 +390,7 @@ const fetchData = async () => {
     }
   } catch (error) {
     if (myRequestId === currentRequestId) {
-      console.error('Chi tiết lỗi khi tải dữ liệu:', error);
+      // console.error('Chi tiết lỗi khi tải dữ liệu:', error);
       toast.error('Không thể tải dữ liệu lịch sử. Vui lòng thử lại!');
     }
   } finally {
@@ -464,8 +464,8 @@ const downloadExcel = async (maBill, maKho) => {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    console.error('Chi tiết lỗi xuất Excel:', error);
-    toast.error('Có lỗi xảy ra khi xuất file Excel! Hãy xem Console (F12).');
+    // console.error('Chi tiết lỗi xuất Excel:', error);
+    toast.error('Có lỗi xảy ra khi xuất file Excel!');
   }
 };
 </script>
