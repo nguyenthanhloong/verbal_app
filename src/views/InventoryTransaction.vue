@@ -216,19 +216,21 @@
               </div>
               <template v-if="currentAction === 'VIP_IMPORT_NEW'">
                 <div class="form-group">
-                  <label>PXK Kho TSB</label>
+                  <label>PXK Kho TSB <span class="text-danger">*</span></label>
                   <input
                     type="text"
                     v-model="form.pxk_kho_tsb"
                     placeholder="Phiếu xuất kho TSB..."
+                    required
                   />
                 </div>
                 <div class="form-group">
-                  <label>PXK VP TSB</label>
+                  <label>PXK VP TSB <span class="text-danger">*</span></label>
                   <input
                     type="text"
                     v-model="form.pxk_vp_tsb"
                     placeholder="Phiếu xuất VP TSB..."
+                    required
                   />
                 </div>
               </template>
@@ -255,12 +257,7 @@
                 class="form-group"
                 v-if="customerMode === 'THUONG' || customerMode === 'LE'"
               >
-                <label
-                  >Tên Sản Phẩm
-                  <span v-if="!isExportAction" class="text-danger"
-                    >*</span
-                  ></label
-                >
+                <label>Tên Sản Phẩm <span class="text-danger">*</span></label>
                 <input
                   type="text"
                   v-model="form.ten_san_pham"
