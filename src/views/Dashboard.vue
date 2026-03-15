@@ -30,9 +30,6 @@
           <strong>Quản trị viên (Admin)</strong> hoặc
           <strong>Quản lý kho</strong> để được hỗ trợ cấp quyền.
         </p>
-        <button class="btn-contact" @click="contactAdmin">
-          <Mail class="btn-icon" /> Gửi yêu cầu cấp quyền
-        </button>
       </div>
 
       <div v-else class="main-content-area">
@@ -205,10 +202,6 @@ const hasNoPermissions = computed(
   () =>
     !isAdmin.value && !canAccessInventory.value && !canAccessMasterData.value
 );
-
-const contactAdmin = () => {
-  alert('Đã gửi yêu cầu cấp quyền đến Quản trị viên!');
-};
 
 // CẤU HÌNH DỮ LIỆU HIỂN THỊ
 const inventoryCards = computed(() => [
