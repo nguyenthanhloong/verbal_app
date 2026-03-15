@@ -490,6 +490,12 @@ const executeSavePermissions = async () => {
   gap: 8px;
   padding-left: 30px; /* Lùi vào một chút cho đẹp */
 }
+.badge {
+  display: inline-block;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-all;
+}
 .perm-badge {
   background-color: #f1f5f9;
   color: #64748b;
@@ -497,6 +503,12 @@ const executeSavePermissions = async () => {
   border-radius: 4px;
   font-size: 0.85rem;
   border: 1px solid #e2e8f0;
+
+  /* Thêm các thuộc tính chống tràn text */
+  display: inline-block;
+  max-width: 100%;
+  word-wrap: break-word; /* Nếu tên quyền quá dài không có dấu cách, ép nó rớt dòng */
+  white-space: normal;
 }
 .perm-badge.badge-active {
   background-color: #2e7d32;

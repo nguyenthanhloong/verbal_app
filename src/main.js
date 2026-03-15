@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 // import './style.css'
-import './assets/admin.css';
+import './assets/common.css';
 import App from './App.vue'
-import router from './router' // Lát nữa tạo Router sẽ import vào
+import router from './router'
 import { permissionDirective } from './directives/permission'
 
 const app = createApp(App)

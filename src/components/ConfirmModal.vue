@@ -96,8 +96,15 @@ onUnmounted(() => {
   opacity: 0;
   backdrop-filter: blur(0px);
 }
-.modal-fade-enter-active .modal-content {
-  animation: scaleIn 0.2s ease-out forwards;
+
+.modal-fade-enter-active .modal-content,
+.modal-fade-leave-active .modal-content {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-fade-enter-from .modal-content,
+.modal-fade-leave-to .modal-content {
+  transform: scale(0.95);
 }
 
 .modal-overlay {
@@ -182,7 +189,7 @@ onUnmounted(() => {
 /* Nút bấm */
 .modal-actions {
   display: flex;
-  justify-content: flex-end; /* Canh phải theo chuẩn Enterprise */
+  justify-content: flex-end;
   gap: 12px;
 }
 
@@ -240,21 +247,5 @@ onUnmounted(() => {
   width: 16px;
   height: 16px;
   animation: spin 1s linear infinite;
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 </style>
